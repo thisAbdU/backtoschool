@@ -14,11 +14,12 @@ interface StudentSeatProps {
   student: Student
   seatIndex: number
   revealed: boolean
+  movable?: boolean
   onSelect?: (student: Student) => void
   onMoved?: () => void
 }
 
-export function StudentSeat({ student, seatIndex, revealed, onSelect, onMoved }: StudentSeatProps) {
+export function StudentSeat({ student, seatIndex, revealed, movable = false, onSelect, onMoved }: StudentSeatProps) {
   const tone = SKIN[hash(student.id) % SKIN.length]
   const hair = HAIR[hash(student.name) % HAIR.length]
   const clickable = Boolean(student.creator && onSelect)
@@ -28,6 +29,7 @@ export function StudentSeat({ student, seatIndex, revealed, onSelect, onMoved }:
   const { pos, dragging, bind } = useRoomDrag(
     clickable ? () => onSelect?.(student) : undefined,
     onMoved,
+    movable,
   )
 
   return (

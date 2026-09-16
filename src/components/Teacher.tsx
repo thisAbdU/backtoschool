@@ -6,10 +6,11 @@ import { telegramAvatarUrl, telegramLink } from '../utils/telegram'
 interface TeacherProps {
   teacher: TeacherType
   revealed: boolean
+  movable?: boolean
   onMoved?: () => void
 }
 
-export function Teacher({ teacher, revealed, onMoved }: TeacherProps) {
+export function Teacher({ teacher, revealed, movable = false, onMoved }: TeacherProps) {
   const [broken, setBroken] = useState(false)
   const src = telegramAvatarUrl(teacher.username, teacher.avatar)
   const url = telegramLink(teacher.username)
@@ -17,6 +18,7 @@ export function Teacher({ teacher, revealed, onMoved }: TeacherProps) {
   const { pos, dragging, bind } = useRoomDrag(
     url ? () => window.open(url, '_blank', 'noreferrer') : undefined,
     onMoved,
+    movable,
   )
   const showPhoto = Boolean(src) && !broken
 

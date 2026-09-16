@@ -50,18 +50,15 @@ a {
 .app.playing {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  overflow: hidden;
+  min-height: 100dvh;
 }
 .app.capturing .result-actions,
-.app.capturing .move-hint,
+.app.capturing .move-toggle,
 .app.capturing .sheet-backdrop {
   display: none !important;
 }
 
 .class-layout {
-  flex: 1;
-  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -222,8 +219,9 @@ a {
 
 .classroom-wrap {
   padding: 0;
-  height: 54vh;
-  min-height: 280px;
+  height: min(62vh, 520px);
+  min-height: 300px;
+  flex: none;
 }
 
 .classroom {
@@ -263,7 +261,7 @@ a {
   transform: translate(-50%, -50%) scale(0.9);
   z-index: 2;
   filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.35));
-  touch-action: none;
+  touch-action: manipulation;
   user-select: none;
 }
 .seat {
@@ -279,11 +277,18 @@ a {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
   transition: 0.35s cubic-bezier(0.2, 1.4, 0.3, 1);
+  cursor: pointer;
+}
+.classroom.unlocked .seat.in,
+.classroom.unlocked .teacher.in,
+.classroom.unlocked .seat.clickable,
+.classroom.unlocked .teacher.clickable {
   cursor: grab;
+  touch-action: none;
 }
 .seat.clickable,
 .teacher.clickable {
-  cursor: grab;
+  cursor: pointer;
 }
 .seat.dragging,
 .teacher.dragging {
@@ -427,21 +432,23 @@ a {
   z-index: 6;
 }
 
-.move-hint {
+.move-toggle {
   position: absolute;
   left: 50%;
   top: 12px;
   z-index: 8;
   transform: translateX(-50%);
   margin: 0;
+  border: 0;
   background: rgba(16, 14, 12, 0.9);
   color: #f5f0e4;
+  font: inherit;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.01em;
   padding: 8px 14px;
   border-radius: 999px;
-  pointer-events: none;
+  cursor: pointer;
   text-align: center;
   max-width: min(92vw, 380px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
@@ -503,9 +510,9 @@ a {
 }
 
 .result {
-  flex: 1;
+  flex: none;
   min-height: 0;
-  overflow: auto;
+  overflow: visible;
   padding: 16px 16px 28px;
   animation: fadeUp 0.4s ease;
   background: #161412;
@@ -587,11 +594,8 @@ a {
 .result-actions {
   display: grid;
   gap: 10px;
-  margin-top: auto;
+  margin-top: 16px;
   padding-top: 12px;
-  position: sticky;
-  bottom: 0;
-  background: linear-gradient(transparent, #161412 12px);
 }
 .again-btn {
   background: transparent;
@@ -736,9 +740,15 @@ a {
     padding: 18px 22px;
     font-size: 1.2rem;
   }
+  .app.playing {
+    height: 100dvh;
+    overflow: hidden;
+  }
   .class-layout {
     display: block;
     position: relative;
+    flex: 1;
+    min-height: 0;
   }
   .classroom-wrap {
     position: absolute;
@@ -755,8 +765,10 @@ a {
   .seat-3 { left: 12%; top: 68%; }
   .seat-4 { left: 32%; top: 68%; }
   .teacher { left: 52%; top: 68%; }
-  .move-hint {
+  .move-toggle {
     left: 33%;
+    font-size: 0.95rem;
+    padding: 10px 18px;
   }
   .result {
     position: absolute;
@@ -771,6 +783,13 @@ a {
     backdrop-filter: blur(12px);
     padding: 18px 16px 20px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    overflow: auto;
+  }
+  .result-actions {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    background: linear-gradient(transparent, rgba(16, 14, 12, 0.95) 12px);
   }
   .seat,
   .teacher {
@@ -809,10 +828,6 @@ a {
   .sweater {
     width: 52px;
     height: 32px;
-  }
-  .move-hint {
-    font-size: 0.95rem;
-    padding: 10px 18px;
   }
   .teacher-figure {
     width: 80px;

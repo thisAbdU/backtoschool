@@ -4,17 +4,19 @@ function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n))
 }
 
-export function useRoomDrag(onTap?: () => void, onMoved?: () => void) {
+export function useRoomDrag(onTap?: () => void, onMoved?: () => void, enabled = false) {
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null)
   const [dragging, setDragging] = useState(false)
   const drag = useRef<{ dx: number; dy: number; x: number; y: number; moved: boolean } | null>(null)
   const tap = useRef(onTap)
   const moved = useRef(onMoved)
+  const on = useRef(enabled)
   tap.current = onTap
   moved.current = onMoved
+  on.current = enabled
 
   const onPointerDown = (e: PointerEvent<HTMLElement>) => {
-    if (e.button !== 0) return
+    if (!on.current || e.button !== 0) return
     const room = e.currentTarget.closest('.classroom')?.getBoundingClientRect()
     const el = e.currentTarget.getBoundingClientRect()
     if (!room) return
@@ -27,6 +29,7 @@ export function useRoomDrag(onTap?: () => void, onMoved?: () => void) {
   }
 
   const onPointerMove = (e: PointerEvent<HTMLElement>) => {
+    if (!on.current) return
     const d = drag.current
     if (!d) return
     if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 8) return
@@ -45,7 +48,7 @@ export function useRoomDrag(onTap?: () => void, onMoved?: () => void) {
     const d = drag.current
     drag.current = null
     setDragging(false)
-    if (d && !d.moved) tap.current?.()
+    if (!d?.moved) tap.current?.()
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
     } catch {

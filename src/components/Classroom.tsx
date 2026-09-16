@@ -11,7 +11,7 @@ interface ClassroomProps {
 export function Classroom({ game, onRevealed }: ClassroomProps) {
   const [tick, setTick] = useState(0)
   const [selected, setSelected] = useState<Student | null>(null)
-  const [hint, setHint] = useState(true)
+  const [movable, setMovable] = useState(false)
 
   const revealOrder = useMemo(() => {
     const order: number[] = []
@@ -32,17 +32,9 @@ export function Classroom({ game, onRevealed }: ClassroomProps) {
     return () => timers.forEach(clearTimeout)
   }, [game, revealOrder, onRevealed])
 
-  useEffect(() => {
-    if (tick < 20) return
-    const id = window.setTimeout(() => setHint(false), 8000)
-    return () => window.clearTimeout(id)
-  }, [tick])
-
-  const hideHint = () => setHint(false)
-
   return (
     <div className="classroom-wrap">
-      <div className="classroom">
+      <div className={`classroom${movable ? ' unlocked' : ''}`}>
         <img className="classroom-photo" src="/classroom.jpg" alt="" />
         {game.seats.map((student, seatIndex) => (
           <StudentSeat
@@ -50,13 +42,15 @@ export function Classroom({ game, onRevealed }: ClassroomProps) {
             seatIndex={seatIndex}
             student={student}
             revealed={tick >= revealOrder.indexOf(seatIndex) + 1}
+            movable={movable}
             onSelect={setSelected}
-            onMoved={hideHint}
           />
         ))}
-        <Teacher teacher={game.teacher} revealed={tick >= 20} onMoved={hideHint} />
-        {tick >= 20 && hint ? (
-          <p className="move-hint">Drag anyone if a name is hidden</p>
+        <Teacher teacher={game.teacher} revealed={tick >= 20} movable={movable} />
+        {tick >= 20 ? (
+          <button type="button" className="move-toggle" onClick={() => setMovable((on) => !on)}>
+            {movable ? 'Done — lock seats' : 'Names hidden? Move seats'}
+          </button>
         ) : null}
       </div>
       {selected ? <CreatorCard student={selected} onClose={() => setSelected(null)} /> : null}

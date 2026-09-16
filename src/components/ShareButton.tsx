@@ -9,8 +9,8 @@ function shot(node: HTMLElement) {
   return toBlob(node, {
     cacheBust: true,
     pixelRatio: Math.min(2, window.devicePixelRatio || 1),
-    width: node.clientWidth,
-    height: node.clientHeight,
+    width: node.scrollWidth,
+    height: node.scrollHeight,
   }).then((blob) => {
     if (!blob) throw new Error('empty screenshot')
     return blob
