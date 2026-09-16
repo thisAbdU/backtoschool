@@ -5,6 +5,18 @@ interface ShareButtonProps {
   text: string
 }
 
+function shot(node: HTMLElement) {
+  return toBlob(node, {
+    cacheBust: true,
+    pixelRatio: Math.min(2, window.devicePixelRatio || 1),
+    width: node.clientWidth,
+    height: node.clientHeight,
+  }).then((blob) => {
+    if (!blob) throw new Error('empty screenshot')
+    return blob
+  })
+}
+
 export function ShareButton({ text }: ShareButtonProps) {
   const [label, setLabel] = useState('SHARE YOUR CLASS')
 
@@ -12,54 +24,33 @@ export function ShareButton({ text }: ShareButtonProps) {
     const node = document.querySelector('.app.playing')
     if (!(node instanceof HTMLElement)) return
 
-    setLabel('SHARING...')
+    setLabel('COPYING...')
     node.classList.add('capturing')
+    const blobPromise = shot(node)
     try {
-      const blob = await toBlob(node, {
-        cacheBust: true,
-        pixelRatio: Math.min(2, window.devicePixelRatio || 1),
-        width: node.clientWidth,
-        height: node.clientHeight,
-      })
-      if (!blob) throw new Error('empty screenshot')
-      const file = new File([blob], 'my-2019-class.png', { type: 'image/png' })
-
-      if (navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({ title: 'My 2019 Class', text, files: [file] })
-          setLabel('SHARE YOUR CLASS')
-          return
-        } catch (error) {
-          if (error instanceof DOMException && error.name === 'AbortError') {
-            setLabel('SHARE YOUR CLASS')
-            return
-          }
-        }
-      }
-
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = 'my-2019-class.png'
-      link.click()
-      URL.revokeObjectURL(url)
-      setLabel('SAVED ✓')
-      window.setTimeout(() => setLabel('SHARE YOUR CLASS'), 1800)
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blobPromise })])
+      setLabel('COPIED ✓')
     } catch {
       try {
-        await navigator.clipboard.writeText(text)
+        const blob = await blobPromise
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
         setLabel('COPIED ✓')
       } catch {
-        setLabel('SHARE YOUR CLASS')
+        try {
+          await navigator.clipboard.writeText(text)
+          setLabel('COPIED TEXT ✓')
+        } catch {
+          setLabel('SHARE YOUR CLASS')
+        }
       }
-      window.setTimeout(() => setLabel('SHARE YOUR CLASS'), 1800)
     } finally {
       node.classList.remove('capturing')
+      window.setTimeout(() => setLabel('SHARE YOUR CLASS'), 1800)
     }
   }
 
   return (
-    <button type="button" className="share-btn" onClick={share} disabled={label === 'SHARING...'}>
+    <button type="button" className="share-btn" onClick={share} disabled={label === 'COPYING...'}>
       {label}
     </button>
   )
